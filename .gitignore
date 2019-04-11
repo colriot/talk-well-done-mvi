@@ -1,0 +1,33 @@
+# Intellij
+.idea/
+!.idea/codeStyles/
+*.iml
+
+# Gradle files
+.gradle/
+build/
+
+# Android Studio
+local.properties
+.navigation/
+captures/
+.externalNativeBuild/
+
+# Built application files
+*.apk
+*.ap_
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
