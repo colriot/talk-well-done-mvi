@@ -38,7 +38,6 @@ class Store<A : Action, S : State>(
 
   fun bind(view: MviView<A, S>): Disposable {
     val disposable = CompositeDisposable()
-    disposable += wire()
     disposable += stateRelay.observeOn(uiScheduler).subscribe(view::render)
     disposable += view.actions.subscribe(actionsRelay::accept)
     return disposable

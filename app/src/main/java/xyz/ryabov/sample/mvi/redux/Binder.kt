@@ -3,9 +3,7 @@ package xyz.ryabov.sample.mvi.redux
 import androidx.lifecycle.ViewModel
 import io.reactivex.disposables.Disposable
 
-class Binder<A : Action, S : State>
-//@Inject
-constructor(private val store: Store<A, S>) : ViewModel() {
+class Binder<A : Action, S : State>(private val store: Store<A, S>) : ViewModel() {
 
   private val wiring = store.wire()
   private var viewBinding: Disposable? = null

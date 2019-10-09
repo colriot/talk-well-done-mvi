@@ -19,6 +19,6 @@ inline fun <T, U, R> Observable<T>.withLatestFrom(
     crossinline combiner: (T, U) -> R
 ): Observable<R> = withLatestFrom(other, BiFunction<T, U, R> { t, u -> combiner.invoke(t, u) })
 
-inline fun Context.toast(message: String?) {
+fun Context.toast(message: String?) {
   Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }

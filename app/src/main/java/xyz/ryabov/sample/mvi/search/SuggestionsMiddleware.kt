@@ -12,7 +12,7 @@ class SuggestionsMiddleware(private val api: Api, private val uiScheduler: Sched
   override fun bind(actions: Observable<Action>, state: Observable<UiState>): Observable<Action> {
     return actions.ofType<UiAction.LoadSuggestionsAction>()
         .withLatestFrom(state) { action, currentState -> action to currentState }
-        .flatMap { (action, _) ->
+        .switchMap { (action, _) ->
           api.suggestions(action.query)
               .onErrorReturnItem(emptyList())
               .map { result -> InternalAction.SuggestionsLoadedAction(result) }

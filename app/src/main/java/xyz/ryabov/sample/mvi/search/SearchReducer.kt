@@ -15,7 +15,9 @@ class SearchReducer : Reducer<UiState, Action> {
       )
       is InternalAction.SearchFailureAction     -> state.copy(loading = false, error = action.error)
       is InternalAction.SuggestionsLoadedAction -> state.copy(suggestions = action.suggestions)
-      is UiAction.LoadSuggestionsAction, is UiAction.SearchAction                               -> state
+      is UiAction.LoadSuggestionsAction,
+      is UiAction.SearchAction                  -> state
+      else                                      -> state
     }
   }
 }
