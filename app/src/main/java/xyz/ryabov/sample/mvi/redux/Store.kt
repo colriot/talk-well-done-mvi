@@ -1,45 +1,56 @@
 package xyz.ryabov.sample.mvi.redux
 
-import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Scheduler
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import xyz.ryabov.sample.mvi.flow.Observable
-import xyz.ryabov.sample.mvi.plusAssign
-import xyz.ryabov.sample.mvi.withLatestFrom
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flattenMerge
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import xyz.ryabov.sample.mvi.flow.withLatestFrom
 
 class Store<A : Action, S : State>(
     private val reducer: Reducer<S, A>,
     private val middlewares: List<Middleware<A, S>>,
-    private val uiScheduler: Scheduler,
     initialState: S
 ) {
-  private val stateRelay = BehaviorRelay.createDefault<S>(initialState)
-  private val actionsRelay = PublishRelay.create<A>()
+  private val stateRelay = MutableStateFlow(initialState)
+  private val actionsRelay = BroadcastChannel<A>(1)
+  private val actionsFlow get() = actionsRelay.asFlow()
 
-  fun wire(): Disposable {
-    val disposable = CompositeDisposable()
-
-    disposable += actionsRelay
+  fun wire(scope: CoroutineScope) {
+    actionsFlow
         .withLatestFrom(stateRelay) { action, state ->
           reducer.reduce(state, action)
         }
         .distinctUntilChanged()
-        .subscribe(stateRelay::accept)
+        .onEach {
+          stateRelay.value = it
+        }
+        .launchIn(scope)
 
-
-    disposable += Observable.merge(
-        middlewares.map { it.bind(actionsRelay, stateRelay) }
-    ).subscribe(actionsRelay::accept)
-
-    return disposable
+    middlewares
+        .map { it.bind(actionsFlow, stateRelay) }
+        .asFlow()
+        .flattenMerge(middlewares.size)
+        .onEach {
+          actionsRelay.offer(it)
+        }
+        .launchIn(scope)
   }
 
-  fun bind(view: MviView<A, S>): Disposable {
-    val disposable = CompositeDisposable()
-    disposable += stateRelay.observeOn(uiScheduler).subscribe(view::render)
-    disposable += view.actions.subscribe(actionsRelay::accept)
-    return disposable
+  fun bind(view: MviView<A, S>, uiScope: CoroutineScope) {
+    stateRelay
+        .onEach {
+          view.render(it)
+        }
+        .launchIn(uiScope)
+
+    view.actions
+        .onEach {
+          actionsRelay.offer(it)
+        }
+        .launchIn(uiScope)
   }
 }

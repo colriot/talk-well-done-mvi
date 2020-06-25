@@ -1,8 +1,9 @@
 package xyz.ryabov.sample.mvi.search
 
 import androidx.lifecycle.ViewModel
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import xyz.ryabov.sample.mvi.api.Api
 import xyz.ryabov.sample.mvi.api.ProductionApi
 import xyz.ryabov.sample.mvi.redux.Action
@@ -12,27 +13,19 @@ import xyz.ryabov.sample.mvi.redux.Store
 class SearchBinder : ViewModel() {
 
   private val api: Api = ProductionApi()
-  private val uiScheduler = AndroidSchedulers.mainThread()
+  private val ioDispatcher = Dispatchers.IO
 
   private val store: Store<Action, UiState> = Store(
       SearchReducer(),
-      listOf(SearchMiddleware(api, uiScheduler), SuggestionsMiddleware(api, uiScheduler)),
-      uiScheduler,
+      listOf(SearchMiddleware(api, ioDispatcher), SuggestionsMiddleware(api, ioDispatcher)),
       UiState()
   )
 
-  private val wiring = store.wire()
-  private var viewBinding: Disposable? = null
-
-  override fun onCleared() {
-    wiring.dispose()
+  init {
+    store.wire(viewModelScope)
   }
 
-  fun bind(view: MviView<Action, UiState>) {
-    viewBinding = store.bind(view)
-  }
-
-  fun unbind() {
-    viewBinding?.dispose()
+  fun bind(view: MviView<Action, UiState>, uiScope: CoroutineScope) {
+    store.bind(view, uiScope)
   }
 }

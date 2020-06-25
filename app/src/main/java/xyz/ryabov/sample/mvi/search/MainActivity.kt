@@ -4,14 +4,17 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.jakewharton.rxbinding2.view.clicks
-import com.jakewharton.rxbinding2.widget.textChanges
-import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flattenMerge
+import kotlinx.coroutines.flow.map
 import xyz.ryabov.sample.mvi.R
 import xyz.ryabov.sample.mvi.domain.Movie
-import xyz.ryabov.sample.mvi.flow.Observable
+import xyz.ryabov.sample.mvi.flow.clicks
+import xyz.ryabov.sample.mvi.flow.textChanges
 import xyz.ryabov.sample.mvi.lazyUi
 import xyz.ryabov.sample.mvi.redux.Action
 import xyz.ryabov.sample.mvi.redux.MviView
@@ -20,25 +23,23 @@ import xyz.ryabov.sample.mvi.toast
 
 class MainActivity : AppCompatActivity(), MviView<Action, UiState> {
 
-  private val suggestionPicks = BehaviorSubject.create<String>()
+  private val suggestionPicks = ConflatedBroadcastChannel<String>()
 
   private val recyclerAdapter = ItemAdapter {
-    suggestionPicks.onNext(it)
+    suggestionPicks.offer(it)
   }
 
-  private val presenter: SearchBinder by viewModels()
+  private val binder: SearchBinder by viewModels()
 
   private val _actions by lazyUi {
     val clicks = submitBtn.clicks().map { UiAction.SearchAction(searchView.text.toString()) }
-    val suggestions = suggestionPicks.map { UiAction.SearchAction(it) }
-    val textChanges = searchView.textChanges().skipInitialValue().map { UiAction.LoadSuggestionsAction(it.toString()) }
+    val suggestions = suggestionPicks.asFlow().map { UiAction.SearchAction(it) }
+    val textChanges = searchView.textChanges().map { UiAction.LoadSuggestionsAction(it.toString()) }
 
-    Observable.merge(clicks, suggestions, textChanges)
+    listOf(clicks, suggestions, textChanges).asFlow().flattenMerge()
   }
 
-  @Suppress("UNCHECKED_CAST")
-  override val actions: Observable<Action>
-    get() = _actions as Observable<Action>
+  override val actions get() = _actions
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -46,12 +47,7 @@ class MainActivity : AppCompatActivity(), MviView<Action, UiState> {
     recyclerView.adapter = recyclerAdapter
     recyclerView.layoutManager = LinearLayoutManager(this)
 
-    presenter.bind(this)
-  }
-
-  override fun onDestroy() {
-    presenter.unbind()
-    super.onDestroy()
+    binder.bind(this, lifecycleScope)
   }
 
   override fun render(state: UiState) {

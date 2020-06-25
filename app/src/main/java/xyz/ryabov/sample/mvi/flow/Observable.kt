@@ -1,5 +1,5 @@
 package xyz.ryabov.sample.mvi.flow
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 
-typealias Observable<T> = Observable<T>
+typealias Observable<T> = Flow<T>
