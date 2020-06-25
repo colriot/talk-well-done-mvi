@@ -1,8 +1,8 @@
 package xyz.ryabov.sample.mvi.search
 
-import io.reactivex.Observable
 import io.reactivex.Scheduler
 import xyz.ryabov.sample.mvi.api.Api
+import xyz.ryabov.sample.mvi.flow.Observable
 import xyz.ryabov.sample.mvi.ofType
 import xyz.ryabov.sample.mvi.redux.Action
 import xyz.ryabov.sample.mvi.redux.Middleware

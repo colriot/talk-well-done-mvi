@@ -1,8 +1,8 @@
 package xyz.ryabov.sample.mvi.api
 
-import io.reactivex.Observable
 import xyz.ryabov.sample.mvi.domain.Movie
 import xyz.ryabov.sample.mvi.domain.movies
+import xyz.ryabov.sample.mvi.flow.Observable
 import java.util.concurrent.TimeUnit
 
 class ProductionApi : Api {

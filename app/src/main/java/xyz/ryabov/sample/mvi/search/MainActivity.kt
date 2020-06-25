@@ -7,11 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
-import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_main.*
 import xyz.ryabov.sample.mvi.R
 import xyz.ryabov.sample.mvi.domain.Movie
+import xyz.ryabov.sample.mvi.flow.Observable
 import xyz.ryabov.sample.mvi.lazyUi
 import xyz.ryabov.sample.mvi.redux.Action
 import xyz.ryabov.sample.mvi.redux.MviView

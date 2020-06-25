@@ -1,6 +1,6 @@
 package xyz.ryabov.sample.mvi.redux
 
-import io.reactivex.Observable
+import xyz.ryabov.sample.mvi.flow.Observable
 
 interface Action
 interface State

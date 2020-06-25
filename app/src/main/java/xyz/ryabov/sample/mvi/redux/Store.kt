@@ -2,10 +2,10 @@ package xyz.ryabov.sample.mvi.redux
 
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
 import io.reactivex.Scheduler
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import xyz.ryabov.sample.mvi.flow.Observable
 import xyz.ryabov.sample.mvi.plusAssign
 import xyz.ryabov.sample.mvi.withLatestFrom
 
