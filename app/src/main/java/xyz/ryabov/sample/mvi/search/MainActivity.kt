@@ -2,24 +2,20 @@ package xyz.ryabov.sample.mvi.search
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.textChanges
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_main.*
 import xyz.ryabov.sample.mvi.R
-import xyz.ryabov.sample.mvi.api.Api
-import xyz.ryabov.sample.mvi.api.ProductionApi
 import xyz.ryabov.sample.mvi.domain.Movie
 import xyz.ryabov.sample.mvi.lazyUi
 import xyz.ryabov.sample.mvi.redux.Action
-import xyz.ryabov.sample.mvi.redux.Binder
 import xyz.ryabov.sample.mvi.redux.MviView
 import xyz.ryabov.sample.mvi.redux.State
-import xyz.ryabov.sample.mvi.redux.Store
 import xyz.ryabov.sample.mvi.toast
 
 class MainActivity : AppCompatActivity(), MviView<Action, UiState> {
@@ -30,7 +26,7 @@ class MainActivity : AppCompatActivity(), MviView<Action, UiState> {
     suggestionPicks.onNext(it)
   }
 
-  private val presenter by lazyUi { binder() }
+  private val presenter: SearchBinder by viewModels()
 
   private val _actions by lazyUi {
     val clicks = submitBtn.clicks().map { UiAction.SearchAction(searchView.text.toString()) }
@@ -73,18 +69,6 @@ class MainActivity : AppCompatActivity(), MviView<Action, UiState> {
     recyclerAdapter.replaceWith(state.suggestions ?: emptyList())
 
     state.error?.let { toast(it.localizedMessage) }
-  }
-
-  private fun binder(): Binder<Action, UiState> {
-    val api: Api = ProductionApi()
-    val uiScheduler = AndroidSchedulers.mainThread()
-    val searchReducer = SearchReducer()
-    val searchMiddleware = SearchMiddleware(api, uiScheduler)
-    val suggestionsMiddleware = SuggestionsMiddleware(api, uiScheduler)
-    val middlewares = listOf(searchMiddleware, suggestionsMiddleware)
-    val store = Store(searchReducer, middlewares, uiScheduler, UiState())
-
-    return Binder(store)
   }
 }
 
