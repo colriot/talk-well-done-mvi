@@ -22,3 +22,5 @@ inline fun <T, U, R> Observable<T>.withLatestFrom(
 fun Context.toast(message: String?) {
   Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
+
+fun <T> lazyUi(initializer: () -> T): Lazy<T> = lazy(LazyThreadSafetyMode.NONE, initializer)

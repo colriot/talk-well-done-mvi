@@ -1,11 +1,13 @@
 package xyz.ryabov.sample.mvi.api
 
 import io.reactivex.Observable
+import xyz.ryabov.sample.mvi.domain.Movie
+import xyz.ryabov.sample.mvi.domain.movies
 import java.util.concurrent.TimeUnit
 
 class ProductionApi : Api {
-  override fun search(q: String): Observable<String> {
-    return Observable.fromCallable { "Abrakadabra" }
+  override fun search(q: String): Observable<Movie> {
+    return Observable.fromCallable { movies.first { it.title.contains(q, ignoreCase = true) } }
         .delay(2, TimeUnit.SECONDS)
   }
 
@@ -14,7 +16,7 @@ class ProductionApi : Api {
       if (query.isBlank()) {
         emptyList()
       } else {
-        listOf("Abrakadabra", "Abikoc", "ABatut").filter { it.startsWith(query) }
+        movies.filter { it.title.contains(query, ignoreCase = true) }.map { it.title }
       }
     }
   }
